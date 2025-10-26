@@ -1,41 +1,42 @@
-name: Generate Snake
-
-on:
-  schedule:
-    - cron: "0 */12 * * *"
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+name: Generate Snake Animation
 
 permissions:
   contents: write
 
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */12 * * *"
+  push:
+    branches:
+      - main
+
 jobs:
-  generate:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          persist-credentials: false
+          fetch-depth: 0
 
-      - name: Generate Snake
-        uses: Platane/snk/svg-only@v3
+      - name: Generate Snake GIF and SVG
+        uses: Platane/snk@v3
+        id: snake
         with:
-          github_user_name: ${{ github.repository_owner }}
+          github_user_name: edwin-biju
           outputs: |
+            dist/github-contribution-grid-snake.gif?color_snake=orange&color_dots=#bfd6f6,#8dbdff,#64a1f4,#4b91f1,#3c7dd9
             dist/github-contribution-grid-snake.svg
-            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy to output branch
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Push generated files to output branch
+        uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
-          branch: output
-          folder: dist
-          clean: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          target_branch: output
+          build_dir: dist
+          commit_message: "Generated Snake Animation 🐍"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
